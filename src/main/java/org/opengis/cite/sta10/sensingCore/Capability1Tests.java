@@ -144,7 +144,7 @@ public class Capability1Tests {
 	private void readPropertyOfEntityWithEntityType(EntityType entityType) {
 		try {
 			String response = getEntities(entityType);
-			Long id = new JSONObject(response).getJSONArray("value").getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = new JSONObject(response).getJSONArray("value").getJSONObject(0).get(ControlInformation.ID);
 			for (String property : entityType.getProperties()) {
 				checkGetPropertyOfEntity(entityType, id, property);
 				checkGetPropertyValueOfEntity(entityType, id, property);
@@ -163,7 +163,7 @@ public class Capability1Tests {
 	 * @param id The id of the entity
 	 * @param property The property to get requested
 	 */
-	private void checkGetPropertyOfEntity(EntityType entityType, long id, String property) {
+	private void checkGetPropertyOfEntity(EntityType entityType, Object id, String property) {
 		try {
 			Map<String, Object> responseMap = getEntity(entityType, id, property);
 			int responseCode = Integer.parseInt(responseMap.get("response-code").toString());
@@ -195,7 +195,7 @@ public class Capability1Tests {
 	 * @param id The id of the entity
 	 * @param property The property to get requested
 	 */
-	private void checkGetPropertyValueOfEntity(EntityType entityType, long id, String property) {
+	private void checkGetPropertyValueOfEntity(EntityType entityType, Object id, String property) {
 		Map<String, Object> responseMap = getEntity(entityType, id, property + "/$value");
 		int responseCode = Integer.parseInt(responseMap.get("response-code").toString());
 		Assert.assertEquals(responseCode, 200, "Reading property value of \"" + property + "\" of the exitixting "
@@ -235,7 +235,7 @@ public class Capability1Tests {
 	 */
 	private void readRelatedEntityOfEntityWithEntityType(EntityType entityType) {
 		List<String> entityTypes = new ArrayList<>();
-		List<Long> ids = new ArrayList<>();
+		List<Object> ids = new ArrayList<>();
 		entityTypes.add(entityType.plural);
 		readRelatedEntity(entityTypes, ids);
 	}
@@ -246,7 +246,7 @@ public class Capability1Tests {
 	 * @param entityTypes List of entity type from EntityType enum list for the chain
 	 * @param ids List of ids for teh chain
 	 */
-	private void readRelatedEntity(List<String> entityTypes, List<Long> ids) {
+	private void readRelatedEntity(List<String> entityTypes, List<Object> ids) {
 		if (entityTypes.size() > resourcePathLevel) {
 			return;
 		}
@@ -259,16 +259,16 @@ public class Capability1Tests {
 			Assert.assertEquals(responseMap.get("response-code"), 200, "Reading relation of the entity from request: "
 					+ urlString + " failed with type: " + entityTypes.toString());
 			String response = responseMap.get("response").toString();
-			Long id;
+			Object id;
 			if (isPlural) {
 				JSONArray jsonValueArray = new JSONObject(response).getJSONArray("value");
 				if (jsonValueArray == null || jsonValueArray.length() == 0) {
 					Assert.fail("Expecting a non-empty list for request: " + urlString);
 				}
-				id = jsonValueArray.getJSONObject(0).getLong(ControlInformation.ID);
+				id = jsonValueArray.getJSONObject(0).get(ControlInformation.ID);
 			}
 			else {
-				id = new JSONObject(response).getLong(ControlInformation.ID);
+				id = new JSONObject(response).get(ControlInformation.ID);
 			}
 
 			// check $ref
@@ -309,7 +309,7 @@ public class Capability1Tests {
 	 * @param entityTypes List of entity type from EntityType enum list for the chain
 	 * @param ids List of ids for teh chain
 	 */
-	private void checkAssociationLinks(String response, List<String> entityTypes, List<Long> ids) {
+	private void checkAssociationLinks(String response, List<String> entityTypes, List<Object> ids) {
 
 		try {
 			if (EntityType.isPlural(entityTypes.get(entityTypes.size() - 1))) {
@@ -364,9 +364,9 @@ public class Capability1Tests {
 	private String readEntityWithEntityType(EntityType entityType) {
 		try {
 			String response = getEntities(entityType);
-			Long id = new JSONObject(response.toString()).getJSONArray("value")
+			Object id = new JSONObject(response.toString()).getJSONArray("value")
 				.getJSONObject(0)
-				.getLong(ControlInformation.ID);
+				.get(ControlInformation.ID);
 			Map<String, Object> responseMap = getEntity(entityType, id, null);
 			int responseCode = Integer.parseInt(responseMap.get("response-code").toString());
 			Assert.assertEquals(responseCode, 200,
@@ -387,7 +387,7 @@ public class Capability1Tests {
 	 * @param entityType Entity type from EntityType enum list
 	 */
 	private void readNonexistentEntityWithEntityType(EntityType entityType) {
-		long id = Long.MAX_VALUE;
+		Object id = Long.MAX_VALUE;
 		int responseCode = Integer.parseInt(getEntity(entityType, id, null).get("response-code").toString());
 		Assert.assertEquals(responseCode, 404,
 				"Reading non-existing " + entityType.name() + " with id " + id + " failed.");
@@ -527,8 +527,8 @@ public class Capability1Tests {
 	 * @param property The requested property of the entity
 	 * @return The response-code and response (body) of the request in Map format.
 	 */
-	private Map<String, Object> getEntity(EntityType entityType, long id, String property) {
-		if (id == -1) {
+	private Map<String, Object> getEntity(EntityType entityType, Object id, String property) {
+		if (ServiceURLBuilder.isNone(id)) {
 			return null;
 		}
 		String urlString = ServiceURLBuilder.buildURLString(rootUri, entityType, id, null, property);

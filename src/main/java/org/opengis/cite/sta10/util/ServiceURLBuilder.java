@@ -19,7 +19,7 @@ public class ServiceURLBuilder {
 	 * @param property The targeted property or the query string
 	 * @return The URL String created based on the input parameters
 	 */
-	public static String buildURLString(String rootURI, EntityType parentEntityType, long parentId,
+	public static String buildURLString(String rootURI, EntityType parentEntityType, Object parentId,
 			EntityType relationEntityType, String property) {
 		String urlString = rootURI;
 		if (relationEntityType == null) {
@@ -52,14 +52,14 @@ public class ServiceURLBuilder {
 					Assert.fail("Entity type is not recognized in SensorThings API : " + parentEntityType);
 					return null;
 			}
-			if (parentId != -1) {
-				urlString += "(" + parentId + ")";
+			if (!isNone(parentId)) {
+				urlString += "(" + key(parentId) + ")";
 			}
 		}
 		else {
 			switch (parentEntityType) {
 				case THING:
-					urlString += "/Things(" + parentId + ")";
+					urlString += "/Things(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case LOCATION:
 							urlString += "/Locations";
@@ -76,7 +76,7 @@ public class ServiceURLBuilder {
 					}
 					break;
 				case LOCATION:
-					urlString += "/Locations(" + parentId + ")";
+					urlString += "/Locations(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case THING:
 							urlString += "/Things";
@@ -90,7 +90,7 @@ public class ServiceURLBuilder {
 					}
 					break;
 				case HISTORICAL_LOCATION:
-					urlString += "/HistoricalLocations(" + parentId + ")";
+					urlString += "/HistoricalLocations(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case THING:
 							urlString += "/Thing";
@@ -104,7 +104,7 @@ public class ServiceURLBuilder {
 					}
 					break;
 				case DATASTREAM:
-					urlString += "/Datastreams(" + parentId + ")";
+					urlString += "/Datastreams(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case THING:
 							urlString += "/Thing";
@@ -124,7 +124,7 @@ public class ServiceURLBuilder {
 					}
 					break;
 				case SENSOR:
-					urlString += "/Sensors(" + parentId + ")";
+					urlString += "/Sensors(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case DATASTREAM:
 							urlString += "/Datastreams";
@@ -135,7 +135,7 @@ public class ServiceURLBuilder {
 					}
 					break;
 				case OBSERVATION:
-					urlString += "/Observations(" + parentId + ")";
+					urlString += "/Observations(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case THING:
 						case DATASTREAM:
@@ -150,7 +150,7 @@ public class ServiceURLBuilder {
 					}
 					break;
 				case OBSERVED_PROPERTY:
-					urlString += "/ObservedProperties(" + parentId + ")";
+					urlString += "/ObservedProperties(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case DATASTREAM:
 							urlString += "/Datastreams";
@@ -161,7 +161,7 @@ public class ServiceURLBuilder {
 					}
 					break;
 				case FEATURE_OF_INTEREST:
-					urlString += "/FeaturesOfInterest(" + parentId + ")";
+					urlString += "/FeaturesOfInterest(" + key(parentId) + ")";
 					switch (relationEntityType) {
 						case OBSERVATION:
 							urlString += "/Observations";
@@ -195,7 +195,7 @@ public class ServiceURLBuilder {
 	 * @param property The targeted property or the query string
 	 * @return The URL String created based on the input parameters
 	 */
-	public static String buildURLString(String rootURI, List<String> entityTypes, List<Long> ids, String property) {
+	public static String buildURLString(String rootURI, List<String> entityTypes, List<Object> ids, String property) {
 		String urlString = rootURI;
 		if (entityTypes.size() != ids.size() && entityTypes.size() != ids.size() + 1) {
 			Assert.fail("There is problem with the path of entities!!!");
@@ -210,7 +210,7 @@ public class ServiceURLBuilder {
 					urlString += "/";
 				}
 				else {
-					urlString += "(" + ids.get(i) + ")/";
+					urlString += "(" + key(ids.get(i)) + ")/";
 				}
 			}
 		}
@@ -226,6 +226,57 @@ public class ServiceURLBuilder {
 			}
 		}
 		return urlString;
+	}
+
+	/**
+	 * The key of an entity id in a resource path. SensorThings 1.0 (15-078r6) Table 2
+	 * gives {@code @iot.id} the type ANY: a number is written as it is, a string as an
+	 * OData string literal, quoted, with a quote inside it doubled (OData 4.0 URL
+	 * Conventions 2.1, ets-sta10#40).
+	 * @param id The id as the service answered it in {@code @iot.id}
+	 * @return The key to write between the parentheses
+	 */
+	public static String key(Object id) {
+		if (id instanceof String) {
+			return "'" + ((String) id).replace("'", "''") + "'";
+		}
+		return String.valueOf(id);
+	}
+
+	/**
+	 * The id written in a resource path key, as {@link #key(Object)} writes it: a quoted
+	 * key is a string id, any other a number.
+	 * @param key The text between the parentheses of a resource path, for example the
+	 * Location header of a create
+	 * @return The id, a String or a Long
+	 */
+	public static Object idOf(String key) {
+		if (key.length() >= 2 && key.startsWith("'") && key.endsWith("'")) {
+			return key.substring(1, key.length() - 1).replace("''", "'");
+		}
+		return Long.parseLong(key);
+	}
+
+	/**
+	 * Whether an id stands for no entity: the suite passes -1 for a collection.
+	 * @param id The id or -1
+	 * @return true for null or the number -1
+	 */
+	public static boolean isNone(Object id) {
+		return id == null || (id instanceof Number && ((Number) id).longValue() == -1);
+	}
+
+	/**
+	 * An id as a JSON value in a request body, for a link by {@code @iot.id}: a string
+	 * quoted, a number as it is (15-078r6 Table 2, ets-sta10#40).
+	 * @param id The id as the service answered it
+	 * @return The JSON text of the id
+	 */
+	public static String json(Object id) {
+		if (id instanceof String) {
+			return org.json.JSONObject.quote((String) id);
+		}
+		return String.valueOf(id);
 	}
 
 }

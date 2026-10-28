@@ -33,7 +33,7 @@ public class Capability3Tests {
 	 */
 	public String rootUri;// ="http://localhost:8080/OGCSensorThings/v1.0";
 
-	private long thingId1, thingId2, datastreamId1, datastreamId2, datastreamId3, datastreamId4, locationId1,
+	private Object thingId1, thingId2, datastreamId1, datastreamId2, datastreamId3, datastreamId4, locationId1,
 			locationId2, historicalLocationId1, historicalLocationId2, historicalLocationId3, historicalLocationId4,
 			sensorId1, sensorId2, sensorId3, sensorId4, observedPropertyId1, observedPropertyId2, observedPropertyId3,
 			observationId1, observationId2, observationId3, observationId4, observationId5, observationId6,
@@ -304,7 +304,7 @@ public class Capability3Tests {
 			if (array.length() == 0) {
 				return;
 			}
-			long id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = array.getJSONObject(0).get(ControlInformation.ID);
 
 			for (String relation : relations) {
 				if (!EntityType.isPlural(relation)) {
@@ -749,7 +749,7 @@ public class Capability3Tests {
 			if (array.length() == 0) {
 				return;
 			}
-			long id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = array.getJSONObject(0).get(ControlInformation.ID);
 
 			for (String relation : relations) {
 				if (!EntityType.isPlural(relation)) {
@@ -1208,7 +1208,7 @@ public class Capability3Tests {
 			if (array.length() == 0) {
 				return;
 			}
-			long id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = array.getJSONObject(0).get(ControlInformation.ID);
 
 			for (String relation : relations) {
 				if (!EntityType.isPlural(relation)) {
@@ -1376,7 +1376,7 @@ public class Capability3Tests {
 			if (array.length() == 0) {
 				return;
 			}
-			long id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = array.getJSONObject(0).get(ControlInformation.ID);
 
 			for (String parentRelation : parentRelations) {
 				EntityType relationEntityType = EntityType.getForRelation(parentRelation);
@@ -1411,7 +1411,7 @@ public class Capability3Tests {
 	 * @param expandedRelations The list of expanded properties
 	 * @return The response of GET request in string format
 	 */
-	private String getEntities(EntityType entityType, long id, EntityType relationEntityType,
+	private String getEntities(EntityType entityType, Object id, EntityType relationEntityType,
 			List<String> selectedProperties, List<String> expandedRelations) {
 		String urlString = rootUri;
 		String selectString = "";
@@ -1723,7 +1723,7 @@ public class Capability3Tests {
 			if (array.length() == 0) {
 				return;
 			}
-			long id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = array.getJSONObject(0).get(ControlInformation.ID);
 
 			for (String parentRelation : parentRelations) {
 				EntityType relationEntityType = EntityType.getForRelation(parentRelation);
@@ -1764,7 +1764,7 @@ public class Capability3Tests {
 			if (array.length() == 0) {
 				return;
 			}
-			long id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = array.getJSONObject(0).get(ControlInformation.ID);
 
 			for (String parentRelation : parentRelations) {
 				EntityType parentRelationType = EntityType.getForRelation(parentRelation);
@@ -1900,7 +1900,7 @@ public class Capability3Tests {
 			if (array.length() == 0) {
 				return;
 			}
-			long id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			Object id = array.getJSONObject(0).get(ControlInformation.ID);
 
 			for (String relation : relations) {
 				if (!EntityType.isPlural(relation)) {
@@ -2072,9 +2072,9 @@ public class Capability3Tests {
 		if (array.length() == 0) {
 			return;
 		}
-		long id = 0;
+		Object id = 0;
 		try {
-			id = array.getJSONObject(0).getLong(ControlInformation.ID);
+			id = array.getJSONObject(0).get(ControlInformation.ID);
 		}
 		catch (JSONException e) {
 			e.printStackTrace();
@@ -2273,44 +2273,44 @@ public class Capability3Tests {
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, -1, null, null);
 			Map<String, Object> responseMap = HTTPMethods.doPost(urlString, urlParameters);
 			String response = responseMap.get("response").toString();
-			thingId1 = Long.parseLong(response.substring(response.indexOf("(") + 1, response.indexOf(")")));
+			thingId1 = ServiceURLBuilder.idOf(response.substring(response.indexOf("(") + 1, response.indexOf(")")));
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1, EntityType.LOCATION,
 					null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
 			JSONArray array = new JSONObject(response).getJSONArray("value");
-			locationId1 = array.getJSONObject(0).getLong(ControlInformation.ID);
+			locationId1 = array.getJSONObject(0).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1, EntityType.DATASTREAM,
 					null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
 			array = new JSONObject(response).getJSONArray("value");
-			datastreamId1 = array.getJSONObject(0).getLong(ControlInformation.ID);
-			datastreamId2 = array.getJSONObject(1).getLong(ControlInformation.ID);
+			datastreamId1 = array.getJSONObject(0).get(ControlInformation.ID);
+			datastreamId2 = array.getJSONObject(1).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
 					EntityType.SENSOR, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			sensorId1 = new JSONObject(response).getLong(ControlInformation.ID);
+			sensorId1 = new JSONObject(response).get(ControlInformation.ID);
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
 					EntityType.OBSERVED_PROPERTY, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			observedPropertyId1 = new JSONObject(response).getLong(ControlInformation.ID);
+			observedPropertyId1 = new JSONObject(response).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId2,
 					EntityType.SENSOR, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			sensorId2 = new JSONObject(response).getLong(ControlInformation.ID);
+			sensorId2 = new JSONObject(response).get(ControlInformation.ID);
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
 					EntityType.OBSERVED_PROPERTY, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			observedPropertyId2 = new JSONObject(response).getLong(ControlInformation.ID);
+			observedPropertyId2 = new JSONObject(response).get(ControlInformation.ID);
 
 			// Second Thing
 			urlParameters = "{\n" + "    \"name\": \"thing 2\",\n" + "    \"description\": \"thing 2\",\n"
@@ -2340,58 +2340,59 @@ public class Capability3Tests {
 					+ "            },\n" + "            \"name\": \"datastream 2\",\n"
 					+ "            \"description\": \"datastream 2\",\n"
 					+ "            \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
-					+ "            \"ObservedProperty\": {\n" + "                \"@iot.id\": " + observedPropertyId2
-					+ "\n" + "            },\n" + "            \"Sensor\": {\n"
-					+ "                \"name\": \"sensor 4 \",\n" + "                \"description\": \"sensor 4 \",\n"
+					+ "            \"ObservedProperty\": {\n" + "                \"@iot.id\": "
+					+ ServiceURLBuilder.json(observedPropertyId2) + "\n" + "            },\n"
+					+ "            \"Sensor\": {\n" + "                \"name\": \"sensor 4 \",\n"
+					+ "                \"description\": \"sensor 4 \",\n"
 					+ "                \"encodingType\": \"application/pdf\",\n"
 					+ "                \"metadata\": \"Second Tempreture sensor\"\n" + "            }\n" + "        }\n"
 					+ "    ]\n" + "}";
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, -1, null, null);
 			responseMap = HTTPMethods.doPost(urlString, urlParameters);
 			response = responseMap.get("response").toString();
-			thingId2 = Long.parseLong(response.substring(response.indexOf("(") + 1, response.indexOf(")")));
+			thingId2 = ServiceURLBuilder.idOf(response.substring(response.indexOf("(") + 1, response.indexOf(")")));
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2, EntityType.LOCATION,
 					null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
 			array = new JSONObject(response).getJSONArray("value");
-			locationId2 = array.getJSONObject(0).getLong(ControlInformation.ID);
+			locationId2 = array.getJSONObject(0).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2, EntityType.DATASTREAM,
 					null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
 			array = new JSONObject(response).getJSONArray("value");
-			datastreamId3 = array.getJSONObject(0).getLong(ControlInformation.ID);
-			datastreamId4 = array.getJSONObject(1).getLong(ControlInformation.ID);
+			datastreamId3 = array.getJSONObject(0).get(ControlInformation.ID);
+			datastreamId4 = array.getJSONObject(1).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId3,
 					EntityType.SENSOR, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			sensorId3 = new JSONObject(response).getLong(ControlInformation.ID);
+			sensorId3 = new JSONObject(response).get(ControlInformation.ID);
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId3,
 					EntityType.OBSERVED_PROPERTY, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			observedPropertyId3 = new JSONObject(response).getLong(ControlInformation.ID);
+			observedPropertyId3 = new JSONObject(response).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId4,
 					EntityType.SENSOR, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			sensorId4 = new JSONObject(response).getLong(ControlInformation.ID);
+			sensorId4 = new JSONObject(response).get(ControlInformation.ID);
 
 			// HistoricalLocations
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1, null, null);
-			urlParameters = "{\"Locations\": [\n" + "    {\n" + "      \"@iot.id\": " + locationId2 + "\n" + "    }\n"
-					+ "  ]}";
+			urlParameters = "{\"Locations\": [\n" + "    {\n" + "      \"@iot.id\": "
+					+ ServiceURLBuilder.json(locationId2) + "\n" + "    }\n" + "  ]}";
 			HTTPMethods.doPatch(urlString, urlParameters);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2, null, null);
-			urlParameters = "{\"Locations\": [\n" + "    {\n" + "      \"@iot.id\": " + locationId1 + "\n" + "    }\n"
-					+ "  ]}";
+			urlParameters = "{\"Locations\": [\n" + "    {\n" + "      \"@iot.id\": "
+					+ ServiceURLBuilder.json(locationId1) + "\n" + "    }\n" + "  ]}";
 			HTTPMethods.doPatch(urlString, urlParameters);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1,
@@ -2399,16 +2400,16 @@ public class Capability3Tests {
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
 			array = new JSONObject(response).getJSONArray("value");
-			historicalLocationId1 = array.getJSONObject(0).getLong(ControlInformation.ID);
-			historicalLocationId2 = array.getJSONObject(1).getLong(ControlInformation.ID);
+			historicalLocationId1 = array.getJSONObject(0).get(ControlInformation.ID);
+			historicalLocationId2 = array.getJSONObject(1).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2,
 					EntityType.HISTORICAL_LOCATION, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
 			array = new JSONObject(response).getJSONArray("value");
-			historicalLocationId3 = array.getJSONObject(0).getLong(ControlInformation.ID);
-			historicalLocationId4 = array.getJSONObject(1).getLong(ControlInformation.ID);
+			historicalLocationId3 = array.getJSONObject(0).get(ControlInformation.ID);
+			historicalLocationId4 = array.getJSONObject(1).get(ControlInformation.ID);
 
 			// Observations
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
@@ -2491,13 +2492,13 @@ public class Capability3Tests {
 					EntityType.FEATURE_OF_INTEREST, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			featureOfInterestId1 = new JSONObject(response).getLong(ControlInformation.ID);
+			featureOfInterestId1 = new JSONObject(response).get(ControlInformation.ID);
 
 			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.OBSERVATION, observationId7,
 					EntityType.FEATURE_OF_INTEREST, null);
 			responseMap = HTTPMethods.doGet(urlString);
 			response = responseMap.get("response").toString();
-			featureOfInterestId2 = new JSONObject(response).getLong(ControlInformation.ID);
+			featureOfInterestId2 = new JSONObject(response).get(ControlInformation.ID);
 
 		}
 		catch (JSONException e) {
@@ -2562,7 +2563,7 @@ public class Capability3Tests {
 				JSONObject result = new JSONObject(responseMap.get("response").toString());
 				array = result.getJSONArray("value");
 				for (int i = 0; i < array.length(); i++) {
-					long id = array.getJSONObject(i).getLong(ControlInformation.ID);
+					Object id = array.getJSONObject(i).get(ControlInformation.ID);
 					deleteEntity(entityType, id);
 				}
 			}
@@ -2580,7 +2581,7 @@ public class Capability3Tests {
 	 * @param entityType Entity type in from EntityType enum
 	 * @param id The id of requested entity
 	 */
-	private void deleteEntity(EntityType entityType, long id) {
+	private void deleteEntity(EntityType entityType, Object id) {
 		String urlString = ServiceURLBuilder.buildURLString(rootUri, entityType, id, null, null);
 		Map<String, Object> responseMap = HTTPMethods.doDelete(urlString);
 		int responseCode = Integer.parseInt(responseMap.get("response-code").toString());
