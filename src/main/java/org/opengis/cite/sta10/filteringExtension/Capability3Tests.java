@@ -19,7 +19,6 @@ import org.opengis.cite.sta10.util.HTTPMethods;
 import org.opengis.cite.sta10.util.ServiceURLBuilder;
 import org.testng.Assert;
 import org.testng.ITestContext;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -33,16 +32,11 @@ public class Capability3Tests {
 	 */
 	public String rootUri;// ="http://localhost:8080/OGCSensorThings/v1.0";
 
-	private Object thingId1, thingId2, datastreamId1, datastreamId2, datastreamId3, datastreamId4, locationId1,
-			locationId2, historicalLocationId1, historicalLocationId2, historicalLocationId3, historicalLocationId4,
-			sensorId1, sensorId2, sensorId3, sensorId4, observedPropertyId1, observedPropertyId2, observedPropertyId3,
-			observationId1, observationId2, observationId3, observationId4, observationId5, observationId6,
-			observationId7, observationId8, observationId9, observationId10, observationId11, observationId12,
-			featureOfInterestId1, featureOfInterestId2;
-
 	/**
-	 * This method will be run before starting the test for this conformance class. It
-	 * creates a set of entities to start testing query options.
+	 * This method will be run before starting the test for this conformance class. The
+	 * service under test holds its fixtures already: this fork reads a SensorThings view
+	 * derived from NGSI-LD Entities, seeded through NGSI-LD before the run, so the setup
+	 * writes nothing (the original POSTed its own Things, Datastreams and Observations).
 	 * @param testContext The test context to find out whether this class is requested to
 	 * test or not
 	 */
@@ -59,7 +53,6 @@ public class Capability3Tests {
 		if (rootUri.lastIndexOf('/') == rootUri.length() - 1) {
 			rootUri = rootUri.substring(0, rootUri.length() - 1);
 		}
-		createEntities();
 	}
 
 	/**
@@ -2229,286 +2222,6 @@ public class Capability3Tests {
 	}
 
 	/**
-	 * Create entities as a pre-process for testing query options.
-	 */
-	private void createEntities() {
-		String urlString = "";
-		try {
-			// First Thing
-			String urlParameters = "{\n" + "    \"name\": \"thing 1\",\n" + "    \"description\": \"thing 1\",\n"
-					+ "    \"properties\": {\n" + "        \"reference\": \"first\"\n" + "    },\n"
-					+ "    \"Locations\": [\n" + "        {\n" + "            \"name\": \"location 1\",\n"
-					+ "            \"description\": \"location 1\",\n" + "            \"location\": {\n"
-					+ "                \"type\": \"Point\",\n" + "                \"coordinates\": [\n"
-					+ "                    -117.05,\n" + "                    51.05\n" + "                ]\n"
-					+ "            },\n" + "            \"encodingType\": \"application/vnd.geo+json\"\n"
-					+ "        }\n" + "    ],\n" + "    \"Datastreams\": [\n" + "        {\n"
-					+ "            \"unitOfMeasurement\": {\n" + "                \"name\": \"Lumen\",\n"
-					+ "                \"symbol\": \"lm\",\n"
-					+ "                \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html/Lumen\"\n"
-					+ "            },\n" + "            \"name\": \"datastream 1\",\n"
-					+ "            \"description\": \"datastream 1\",\n"
-					+ "            \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
-					+ "            \"ObservedProperty\": {\n" + "                \"name\": \"Luminous Flux\",\n"
-					+ "                \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html/LuminousFlux\",\n"
-					+ "                \"description\": \"observedProperty 1\"\n" + "            },\n"
-					+ "            \"Sensor\": {\n" + "                \"name\": \"sensor 1\",\n"
-					+ "                \"description\": \"sensor 1\",\n"
-					+ "                \"encodingType\": \"application/pdf\",\n"
-					+ "                \"metadata\": \"Light flux sensor\"\n" + "            }\n" + "        },\n"
-					+ "        {\n" + "            \"unitOfMeasurement\": {\n"
-					+ "                \"name\": \"Centigrade\",\n" + "                \"symbol\": \"C\",\n"
-					+ "                \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html/Lumen\"\n"
-					+ "            },\n" + "            \"name\": \"datastream 2\",\n"
-					+ "            \"description\": \"datastream 2\",\n"
-					+ "            \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
-					+ "            \"ObservedProperty\": {\n" + "                \"name\": \"Tempretaure\",\n"
-					+ "                \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html/Tempreture\",\n"
-					+ "                \"description\": \"observedProperty 2\"\n" + "            },\n"
-					+ "            \"Sensor\": {\n" + "                \"name\": \"sensor 2\",\n"
-					+ "                \"description\": \"sensor 2\",\n"
-					+ "                \"encodingType\": \"application/pdf\",\n"
-					+ "                \"metadata\": \"Tempreture sensor\"\n" + "            }\n" + "        }\n"
-					+ "    ]\n" + "}";
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, -1, null, null);
-			Map<String, Object> responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			String response = responseMap.get("response").toString();
-			thingId1 = ServiceURLBuilder.idOf(response.substring(response.indexOf("(") + 1, response.indexOf(")")));
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1, EntityType.LOCATION,
-					null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			JSONArray array = new JSONObject(response).getJSONArray("value");
-			locationId1 = array.getJSONObject(0).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1, EntityType.DATASTREAM,
-					null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			array = new JSONObject(response).getJSONArray("value");
-			datastreamId1 = array.getJSONObject(0).get(ControlInformation.ID);
-			datastreamId2 = array.getJSONObject(1).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
-					EntityType.SENSOR, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			sensorId1 = new JSONObject(response).get(ControlInformation.ID);
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
-					EntityType.OBSERVED_PROPERTY, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			observedPropertyId1 = new JSONObject(response).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId2,
-					EntityType.SENSOR, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			sensorId2 = new JSONObject(response).get(ControlInformation.ID);
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
-					EntityType.OBSERVED_PROPERTY, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			observedPropertyId2 = new JSONObject(response).get(ControlInformation.ID);
-
-			// Second Thing
-			urlParameters = "{\n" + "    \"name\": \"thing 2\",\n" + "    \"description\": \"thing 2\",\n"
-					+ "    \"properties\": {\n" + "        \"reference\": \"second\"\n" + "    },\n"
-					+ "    \"Locations\": [\n" + "        {\n" + "            \"name\": \"location 2\",\n"
-					+ "            \"description\": \"location 2\",\n" + "            \"location\": {\n"
-					+ "                \"type\": \"Point\",\n" + "                \"coordinates\": [\n"
-					+ "                    -100.05,\n" + "                    50.05\n" + "                ]\n"
-					+ "            },\n" + "            \"encodingType\": \"application/vnd.geo+json\"\n"
-					+ "        }\n" + "    ],\n" + "    \"Datastreams\": [\n" + "        {\n"
-					+ "            \"unitOfMeasurement\": {\n" + "                \"name\": \"Lumen\",\n"
-					+ "                \"symbol\": \"lm\",\n"
-					+ "                \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html/Lumen\"\n"
-					+ "            },\n" + "            \"name\": \"datastream 3\",\n"
-					+ "            \"description\": \"datastream 3\",\n"
-					+ "            \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
-					+ "            \"ObservedProperty\": {\n" + "                \"name\": \"Second Luminous Flux\",\n"
-					+ "                \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html/LuminousFlux\",\n"
-					+ "                \"description\": \"observedProperty 3\"\n" + "            },\n"
-					+ "            \"Sensor\": {\n" + "                \"name\": \"sensor 3\",\n"
-					+ "                \"description\": \"sensor 3\",\n"
-					+ "                \"encodingType\": \"application/pdf\",\n"
-					+ "                \"metadata\": \"Second Light flux sensor\"\n" + "            }\n"
-					+ "        },\n" + "        {\n" + "            \"unitOfMeasurement\": {\n"
-					+ "                \"name\": \"Centigrade\",\n" + "                \"symbol\": \"C\",\n"
-					+ "                \"definition\": \"http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html/Lumen\"\n"
-					+ "            },\n" + "            \"name\": \"datastream 2\",\n"
-					+ "            \"description\": \"datastream 2\",\n"
-					+ "            \"observationType\": \"http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement\",\n"
-					+ "            \"ObservedProperty\": {\n" + "                \"@iot.id\": "
-					+ ServiceURLBuilder.json(observedPropertyId2) + "\n" + "            },\n"
-					+ "            \"Sensor\": {\n" + "                \"name\": \"sensor 4 \",\n"
-					+ "                \"description\": \"sensor 4 \",\n"
-					+ "                \"encodingType\": \"application/pdf\",\n"
-					+ "                \"metadata\": \"Second Tempreture sensor\"\n" + "            }\n" + "        }\n"
-					+ "    ]\n" + "}";
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, -1, null, null);
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			thingId2 = ServiceURLBuilder.idOf(response.substring(response.indexOf("(") + 1, response.indexOf(")")));
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2, EntityType.LOCATION,
-					null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			array = new JSONObject(response).getJSONArray("value");
-			locationId2 = array.getJSONObject(0).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2, EntityType.DATASTREAM,
-					null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			array = new JSONObject(response).getJSONArray("value");
-			datastreamId3 = array.getJSONObject(0).get(ControlInformation.ID);
-			datastreamId4 = array.getJSONObject(1).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId3,
-					EntityType.SENSOR, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			sensorId3 = new JSONObject(response).get(ControlInformation.ID);
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId3,
-					EntityType.OBSERVED_PROPERTY, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			observedPropertyId3 = new JSONObject(response).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId4,
-					EntityType.SENSOR, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			sensorId4 = new JSONObject(response).get(ControlInformation.ID);
-
-			// HistoricalLocations
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1, null, null);
-			urlParameters = "{\"Locations\": [\n" + "    {\n" + "      \"@iot.id\": "
-					+ ServiceURLBuilder.json(locationId2) + "\n" + "    }\n" + "  ]}";
-			HTTPMethods.doPatch(urlString, urlParameters);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2, null, null);
-			urlParameters = "{\"Locations\": [\n" + "    {\n" + "      \"@iot.id\": "
-					+ ServiceURLBuilder.json(locationId1) + "\n" + "    }\n" + "  ]}";
-			HTTPMethods.doPatch(urlString, urlParameters);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId1,
-					EntityType.HISTORICAL_LOCATION, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			array = new JSONObject(response).getJSONArray("value");
-			historicalLocationId1 = array.getJSONObject(0).get(ControlInformation.ID);
-			historicalLocationId2 = array.getJSONObject(1).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.THING, thingId2,
-					EntityType.HISTORICAL_LOCATION, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			array = new JSONObject(response).getJSONArray("value");
-			historicalLocationId3 = array.getJSONObject(0).get(ControlInformation.ID);
-			historicalLocationId4 = array.getJSONObject(1).get(ControlInformation.ID);
-
-			// Observations
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId1,
-					EntityType.OBSERVATION, null);
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-01T00:00:00Z\",\n" + "  \"result\": 1 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId1 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-02T00:00:00Z\",\n" + "  \"result\": 2 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId2 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-03T00:00:00Z\",\n" + "  \"result\": 3 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId3 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId2,
-					EntityType.OBSERVATION, null);
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-04T00:00:00Z\",\n" + "  \"result\": 4 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId4 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-05T00:00:00Z\",\n" + "  \"result\": 5 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId5 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-06T00:00:00Z\",\n" + "  \"result\": 6 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId6 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId3,
-					EntityType.OBSERVATION, null);
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-07T00:00:00Z\",\n" + "  \"result\": 7 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId7 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-08T00:00:00Z\",\n" + "  \"result\": 8 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId8 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-09T00:00:00Z\",\n" + "  \"result\": 9 \n" + "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId9 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.DATASTREAM, datastreamId4,
-					EntityType.OBSERVATION, null);
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-10T00:00:00Z\",\n" + "  \"result\": 10 \n"
-					+ "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId10 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-11T00:00:00Z\",\n" + "  \"result\": 11 \n"
-					+ "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId11 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-			urlParameters = "{\n" + "  \"phenomenonTime\": \"2015-03-12T00:00:00Z\",\n" + "  \"result\": 12 \n"
-					+ "   }";
-			responseMap = HTTPMethods.doPost(urlString, urlParameters);
-			response = responseMap.get("response").toString();
-			observationId12 = Long
-				.parseLong(response.substring(response.lastIndexOf("(") + 1, response.lastIndexOf(")")));
-
-			// FeatureOfInterest
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.OBSERVATION, observationId1,
-					EntityType.FEATURE_OF_INTEREST, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			featureOfInterestId1 = new JSONObject(response).get(ControlInformation.ID);
-
-			urlString = ServiceURLBuilder.buildURLString(rootUri, EntityType.OBSERVATION, observationId7,
-					EntityType.FEATURE_OF_INTEREST, null);
-			responseMap = HTTPMethods.doGet(urlString);
-			response = responseMap.get("response").toString();
-			featureOfInterestId2 = new JSONObject(response).get(ControlInformation.ID);
-
-		}
-		catch (JSONException e) {
-			e.printStackTrace();
-			Assert.fail("An Exception occurred during testing!:\n" + e.getMessage() + " [Request] " + urlString);
-		}
-
-	}
-
-	/**
 	 * The helper method to check if a list contains a entity name string
 	 * @param list The list to be searched
 	 * @param entity The entity name to be checked
@@ -2531,67 +2244,6 @@ public class Capability3Tests {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * This method is run after all the tests of this class is run and clean the database.
-	 */
-	@AfterClass
-	public void deleteEverythings() {
-		deleteEntityType(EntityType.OBSERVATION);
-		deleteEntityType(EntityType.FEATURE_OF_INTEREST);
-		deleteEntityType(EntityType.DATASTREAM);
-		deleteEntityType(EntityType.SENSOR);
-		deleteEntityType(EntityType.OBSERVED_PROPERTY);
-		deleteEntityType(EntityType.HISTORICAL_LOCATION);
-		deleteEntityType(EntityType.LOCATION);
-		deleteEntityType(EntityType.THING);
-	}
-
-	/**
-	 * Delete all the entities of a certain entity type
-	 * @param entityType The entity type from EntityType enum
-	 */
-	private void deleteEntityType(EntityType entityType) {
-		JSONArray array = null;
-		String urlString = "";
-		do {
-			try {
-				urlString = ServiceURLBuilder.buildURLString(rootUri, entityType, -1, null, null);
-				Map<String, Object> responseMap = HTTPMethods.doGet(urlString);
-				int responseCode = Integer.parseInt(responseMap.get("response-code").toString());
-				JSONObject result = new JSONObject(responseMap.get("response").toString());
-				array = result.getJSONArray("value");
-				for (int i = 0; i < array.length(); i++) {
-					Object id = array.getJSONObject(i).get(ControlInformation.ID);
-					deleteEntity(entityType, id);
-				}
-			}
-			catch (JSONException e) {
-				e.printStackTrace();
-				Assert.fail("An Exception occurred during testing!:\n" + e.getMessage() + "[Request] " + urlString);
-			}
-		}
-		while (array.length() > 0);
-	}
-
-	/**
-	 * This method created the URL string for the entity with specific id and then send
-	 * DELETE request to that URl.
-	 * @param entityType Entity type in from EntityType enum
-	 * @param id The id of requested entity
-	 */
-	private void deleteEntity(EntityType entityType, Object id) {
-		String urlString = ServiceURLBuilder.buildURLString(rootUri, entityType, id, null, null);
-		Map<String, Object> responseMap = HTTPMethods.doDelete(urlString);
-		int responseCode = Integer.parseInt(responseMap.get("response-code").toString());
-		Assert.assertEquals(responseCode, 200, "DELETE does not work properly for " + entityType + " with id " + id
-				+ ". Returned with response code " + responseCode + ". [Request] " + urlString);
-
-		responseMap = HTTPMethods.doGet(urlString);
-		responseCode = Integer.parseInt(responseMap.get("response-code").toString());
-		Assert.assertEquals(responseCode, 404,
-				"Deleted entity was not actually deleted : " + entityType + "(" + id + "). [Request] " + urlString);
 	}
 
 }
